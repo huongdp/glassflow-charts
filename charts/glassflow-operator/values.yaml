@@ -1,0 +1,147 @@
+# Global configuration
+global:
+  # Image registry for all components
+  imageRegistry: "ghcr.io/glassflow/"
+  # Observability configuration
+  observability:
+    logs:
+      enabled: false
+    metrics:
+      enabled: false
+  nats:
+#    address: "localhost:4222"
+    stream:
+      maxAge: 168h
+      maxBytes: 100GB
+      retention: WorkQueue  # Options: WorkQueue, Limits, Interest
+      allowDirect: true
+      allowAtomicPublish: true
+
+  # Pipelines namespace configuration
+  pipelines:
+    namespace:
+      # When true, operator creates per-pipeline namespaces (pipeline-<id>)
+      auto: true
+      # When auto is false, the fixed namespace to deploy all pipelines into
+      name: glassflow-pipelines
+      # When auto is false, Helm can optionally create the namespace
+      create: true
+
+  # PostgreSQL connection URL (same as API; operator passes DSN to pipeline components)
+  # Only used when external postgres is used by the user.
+  # By default, operator uses postgres deployed by the glassflow-etl chart.
+  postgres:
+    # Format: postgresql://username:password@host:port/database
+    connection_url: ""
+    # Alternatively, source the connection URL from a Kubernetes secret
+    secret:
+      name: ""
+      key: ""
+
+  # Encryption for pipeline components (same as API; when enabled, operator copies secret into pipeline namespaces)
+  encryption:
+    enabled: false
+    existingSecret:
+      name: ""
+      key: "encryption-key"
+    createSecret: false
+    secretName: ""  # Defaults to "{{ .Release.Name }}-encryption-key" if empty
+
+controllerManager:
+  manager:
+    # Maximum duration a reconcile operation can run before timing out.
+    # Must be a valid Go duration string (e.g. 15m, 1h).
+    reconcileTimeout: 15m
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+    image:
+      repository: glassflow-etl-k8s-operator
+      tag: v2.0.1
+      pullPolicy: Always
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 10m
+        memory: 64Mi
+    # Node affinity for the operator (optional)
+    affinity: {}
+    # Legacy nodeSelector support (optional, for backward compatibility)
+    nodeSelector: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  replicas: 1
+  serviceAccount:
+    annotations: {}
+kubernetesClusterDomain: cluster.local
+
+# Glassflow components configuration
+glassflowComponents:
+  ingestor:
+    image:
+      repository: glassflow-etl-ingestor
+      tag: v2.4.0
+      pullPolicy: IfNotPresent
+    logLevel: "INFO"
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+      limits:
+        cpu: 1500m
+        memory: 1.5Gi
+    # Node affinity for ingestor component (optional)
+    affinity: {}
+  join:
+    image:
+      repository: glassflow-etl-join
+      tag: v2.4.0
+      pullPolicy: IfNotPresent
+    logLevel: "INFO"
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+      limits:
+        cpu: 1500m
+        memory: 1.5Gi
+    # Node affinity for join component (optional)
+    affinity: {}
+  sink:
+    image:
+      repository: glassflow-etl-sink
+      tag: v2.4.0
+      pullPolicy: IfNotPresent
+    logLevel: "INFO"
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+      limits:
+        cpu: 1500m
+        memory: 1.5Gi
+    # Node affinity for sink component (optional)
+    affinity: {}
+  dedup:
+    image:
+      repository: glassflow-etl-dedup
+      tag: v2.4.0
+      pullPolicy: IfNotPresent
+    logLevel: "INFO"
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+    storage:
+      size: "40Gi"
+      className: ""
+    affinity: {}

@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: glassflow-operator-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "glassflow-operator.labels" . | nindent 4 }}
+data:
+  NATS_ADDR: {{ .Values.global.nats.address | default (printf "nats://%s-nats.%s.svc.cluster.local:4222" .Release.Name .Release.Namespace) | quote }}
+  PIPELINES_NAMESPACE_AUTO: {{ .Values.global.pipelines.namespace.auto | quote }}
+  PIPELINES_NAMESPACE_NAME: {{ .Values.global.pipelines.namespace.name | quote }}
+  RECONCILE_TIMEOUT: {{ .Values.controllerManager.manager.reconcileTimeout | default "15m" | quote }}
+  NATS_MAX_STREAM_AGE: {{ .Values.global.nats.stream.maxAge | quote }}
+  NATS_MAX_STREAM_BYTES: {{ .Values.global.nats.stream.maxBytes | quote }}
+  NATS_STREAM_RETENTION: {{ .Values.global.nats.stream.retention | default "WorkQueue" | quote }}
+  NATS_STREAM_ALLOW_DIRECT: {{ .Values.global.nats.stream.allowDirect | default true | quote }}
+  NATS_STREAM_ALLOW_ATOMIC_PUBLISH: {{ .Values.global.nats.stream.allowAtomicPublish | default true | quote }}
+  KUBERNETES_CLUSTER_DOMAIN: {{ quote .Values.kubernetesClusterDomain }}
+  INGESTOR_IMAGE: {{ printf "%s%s:%s" (.Values.global.imageRegistry | default "") .Values.glassflowComponents.ingestor.image.repository .Values.glassflowComponents.ingestor.image.tag | quote }}
+  JOIN_IMAGE: {{ printf "%s%s:%s" (.Values.global.imageRegistry | default "") .Values.glassflowComponents.join.image.repository .Values.glassflowComponents.join.image.tag | quote }}
+  SINK_IMAGE: {{ printf "%s%s:%s" (.Values.global.imageRegistry | default "") .Values.glassflowComponents.sink.image.repository .Values.glassflowComponents.sink.image.tag | quote }}
+  DEDUP_IMAGE: {{ printf "%s%s:%s" (.Values.global.imageRegistry | default "") .Values.glassflowComponents.dedup.image.repository .Values.glassflowComponents.dedup.image.tag | quote }}
+  INGESTOR_CPU_REQUEST: {{ .Values.glassflowComponents.ingestor.resources.requests.cpu | quote }}
+  INGESTOR_CPU_LIMIT: {{ .Values.glassflowComponents.ingestor.resources.limits.cpu | quote }}
+  INGESTOR_MEMORY_REQUEST: {{ .Values.glassflowComponents.ingestor.resources.requests.memory | quote }}
+  INGESTOR_MEMORY_LIMIT: {{ .Values.glassflowComponents.ingestor.resources.limits.memory | quote }}
+  JOIN_CPU_REQUEST: {{ .Values.glassflowComponents.join.resources.requests.cpu | quote }}
+  JOIN_CPU_LIMIT: {{ .Values.glassflowComponents.join.resources.limits.cpu | quote }}
+  JOIN_MEMORY_REQUEST: {{ .Values.glassflowComponents.join.resources.requests.memory | quote }}
+  JOIN_MEMORY_LIMIT: {{ .Values.glassflowComponents.join.resources.limits.memory | quote }}
+  SINK_CPU_REQUEST: {{ .Values.glassflowComponents.sink.resources.requests.cpu | quote }}
+  SINK_CPU_LIMIT: {{ .Values.glassflowComponents.sink.resources.limits.cpu | quote }}
+  SINK_MEMORY_REQUEST: {{ .Values.glassflowComponents.sink.resources.requests.memory | quote }}
+  SINK_MEMORY_LIMIT: {{ .Values.glassflowComponents.sink.resources.limits.memory | quote }}
+  INGESTOR_AFFINITY: {{ .Values.glassflowComponents.ingestor.affinity | toJson | quote }}
+  JOIN_AFFINITY: {{ .Values.glassflowComponents.join.affinity | toJson | quote }}
+  SINK_AFFINITY: {{ .Values.glassflowComponents.sink.affinity | toJson | quote }}
+  OBSERVABILITY_LOGS_ENABLED: {{ .Values.global.observability.logs.enabled | quote }}
+  OBSERVABILITY_METRICS_ENABLED: {{ .Values.global.observability.metrics.enabled | quote }}
+  OBSERVABILITY_OTEL_ENDPOINT: {{ printf "http://%s-otel-collector.%s.svc.cluster.local:4318" .Release.Name .Release.Namespace | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ printf "http://%s-otel-collector.%s.svc.cluster.local:4318" .Release.Name .Release.Namespace | quote }}
+  INGESTOR_LOG_LEVEL: {{ .Values.glassflowComponents.ingestor.logLevel | quote }}
+  JOIN_LOG_LEVEL: {{ .Values.glassflowComponents.join.logLevel | quote }}
+  SINK_LOG_LEVEL: {{ .Values.glassflowComponents.sink.logLevel | quote }}
+  INGESTOR_IMAGE_TAG: {{ .Values.glassflowComponents.ingestor.image.tag | quote }}
+  JOIN_IMAGE_TAG: {{ .Values.glassflowComponents.join.image.tag | quote }}
+  SINK_IMAGE_TAG: {{ .Values.glassflowComponents.sink.image.tag | quote }}
+  OPERATOR_IMAGE_TAG: {{ .Values.controllerManager.manager.image.tag | default .Chart.AppVersion | quote }}
+  DEDUP_IMAGE_TAG: {{ .Values.glassflowComponents.dedup.image.tag | quote }}
+  INGESTOR_PULL_POLICY: {{ .Values.glassflowComponents.ingestor.image.pullPolicy | default "IfNotPresent" | quote }}
+  JOIN_PULL_POLICY: {{ .Values.glassflowComponents.join.image.pullPolicy | default "IfNotPresent" | quote }}
+  SINK_PULL_POLICY: {{ .Values.glassflowComponents.sink.image.pullPolicy | default "IfNotPresent" | quote }}
+  DEDUP_PULL_POLICY: {{ .Values.glassflowComponents.dedup.image.pullPolicy | default "IfNotPresent" | quote }}
+  DEDUP_CPU_REQUEST: {{ .Values.glassflowComponents.dedup.resources.requests.cpu | quote }}
+  DEDUP_CPU_LIMIT: {{ .Values.glassflowComponents.dedup.resources.limits.cpu | quote }}
+  DEDUP_MEMORY_REQUEST: {{ .Values.glassflowComponents.dedup.resources.requests.memory | quote }}
+  DEDUP_MEMORY_LIMIT: {{ .Values.glassflowComponents.dedup.resources.limits.memory | quote }}
+  DEDUP_AFFINITY: {{ .Values.glassflowComponents.dedup.affinity | toJson | quote }}
+  DEDUP_LOG_LEVEL: {{ .Values.glassflowComponents.dedup.logLevel | quote }}
+  DEDUP_STORAGE_SIZE: {{ .Values.glassflowComponents.dedup.storage.size | quote }}
+  DEDUP_STORAGE_CLASS: {{ .Values.glassflowComponents.dedup.storage.className | quote }}
